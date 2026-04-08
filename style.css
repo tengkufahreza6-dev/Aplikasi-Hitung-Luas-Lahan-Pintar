@@ -2066,3 +2066,66 @@ body.dark-mode #konversiHasil {
     word-break: break-word;
     font-size: 0.9em;
 }
+/* Dark mode untuk estimasi pagar */
+body.dark-mode .estimasi-pagar {
+    background: #2a2a3a !important;
+    border-color: #4a4a5a !important;
+}
+
+body.dark-mode .estimasi-pagar h4 {
+    color: #ff9800 !important; /* warna oranye tetap terang */
+}
+
+body.dark-mode .estimasi-pagar label {
+    color: #aaa !important;
+}
+
+body.dark-mode .estimasi-pagar input {
+    background: #3a3a4a !important;
+    border-color: #5a5a6a !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .estimasi-pagar input:focus {
+    border-color: #ff9800 !important;
+    outline: none;
+}
+
+body.dark-mode #kelilingValue {
+    color: #ff9800 !important; /* oranye */
+}
+
+body.dark-mode #totalBiaya {
+    color: #81c784 !important; /* hijau muda untuk dark */
+}
+
+body.dark-mode .estimasi-pagar p {
+    color: #aaa !important;
+}
+/* Dark mode untuk estimasi bibit */
+body.dark-mode .estimasi-bibit {
+    background: #2a2a3a !important;
+    border-color: #4a4a5a !important;
+}
+body.dark-mode .estimasi-bibit h4 {
+    color: #81c784 !important;
+}
+body.dark-mode .estimasi-bibit label {
+    color: #aaa !important;
+}
+body.dark-mode .estimasi-bibit input {
+    background: #3a3a4a !important;
+    border-color: #5a5a6a !important;
+    color: #e0e0e0 !important;
+}
+body.dark-mode #jumlahBibit {
+    color: #81c784 !important;
+}
+body.dark-mode .estimasi-bibit p {
+    color: #aaa !important;
+}
+/* Perbaikan teks small (keterangan) di estimasi pagar dan bibit saat dark mode */
+body.dark-mode .estimasi-pagar small,
+body.dark-mode .estimasi-bibit small {
+    color: #aaa !important;
+}

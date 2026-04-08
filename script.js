@@ -260,7 +260,19 @@ function hitungLuasPoligon(points) {
     
     return Math.abs(luas) / 2;
 }
-
+function hitungPerimeter(points) {
+    if (points.length < 3) return 0;
+    let perimeter = 0;
+    const n = points.length;
+    for (let i = 0; i < n; i++) {
+        const p1 = points[i];
+        const p2 = points[(i + 1) % n];
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        perimeter += Math.sqrt(dx*dx + dy*dy);
+    }
+    return perimeter;
+}
 // Fungsi ini melakukan interpolasi LINEAR (bukan spline)
 // Untuk menambah titik di antara titik-titik yang ada
 function interpolasiLinear(points, faktor = 3) {
@@ -601,7 +613,7 @@ function hitungSemuaLuas(points) {
     const luasRiemann = hitungLuasRiemann(pointsProcess, partisi);
     const luasTrapezoida = hitungLuasTrapezoida(pointsProcess, partisi);  // sudah support adaptive
     const luasSimpson = hitungLuasSimpson(pointsProcess, partisi);
-    
+    const perimeter = hitungPerimeter(pointsProcess);
     return {
         poligon: luasPoligon,
         riemann: luasRiemann,
@@ -614,7 +626,8 @@ function hitungSemuaLuas(points) {
         interpolasi: faktorInterpolasi,
         riemannType: riemannType,
         simpsonType: simpsonType,
-        adaptiveTrap: isAdaptive  // ← TAMBAHKAN INI
+        adaptiveTrap: isAdaptive,
+        perimeter: perimeter  // ← TAMBAHKAN INI
     };
 }
 
@@ -798,7 +811,7 @@ function drawLahan(points, hasil) {
         ctx.fillStyle = '#7b1fa2';
         ctx.fillText(`Terbaik: ${terbaik.name}`, 380, infoY);
         ctx.fillStyle = '#666';
-        ctx.fillText(`error ${terbaik.error.toFixed(2)}%`, 380, infoY + 20);
+        ctx.fillText(`error ${terbaik.error.toFixed(presisi)}%`, 380, infoY + 20);
     }
 
     // Legenda
@@ -840,7 +853,7 @@ function drawLahan(points, hasil) {
 // ============================================================
 // FUNGSI TAMPILKAN PERHITUNGAN
 // ============================================================
-function tampilkanPerhitungan(points, hasil, xMin, xMax) {
+function tampilkanPerhitungan(points, hasil, xMin, xMax, presisi = 3) {
     const container = document.getElementById('perhitunganContainer');
     if (!container) return;
     
@@ -850,7 +863,13 @@ function tampilkanPerhitungan(points, hasil, xMin, xMax) {
     html += '<span class="roll-icon" id="perhitunganIcon">▼</span>';
     html += '</div>';
     html += '<div class="perhitungan-body" id="perhitunganBody">';
-    
+        // Informasi interpolasi jika aktif
+    if (hasil.interpolasi && hasil.interpolasi > 1) {
+        html += `<div style="background: #fff3e0; padding: 8px 12px; margin-bottom: 15px; border-radius: 6px; border-left: 4px solid #ff6f00;">
+                    <strong>⚠️ Interpolasi aktif (${hasil.interpolasi}×)</strong> — titik batas lahan telah dihaluskan dengan menambah titik di antaranya.
+                 </div>`;
+    }
+
     // Poligon
     html += '<div class="perhitungan-step">';
     html += '<h4>📐 Metode Poligon (Shoelace)</h4>';
@@ -863,7 +882,7 @@ function tampilkanPerhitungan(points, hasil, xMin, xMax) {
         total += points[i].x * points[j].y - points[j].x * points[i].y;
     }
     html += `Σ = ${total}<br>`;
-    html += `Luas = ½ × |${total}| = ${formatAngka(Math.abs(total)/2, 3)} m²`;
+    html += `Luas = ½ × |${total}| = ${formatAngka(Math.abs(total)/2, presisi)} m²`;
     html += '</div>';
     html += '</div>';
     
@@ -878,22 +897,25 @@ html += '<div class="perhitungan-step">';
 html += '<h4>🧱 Metode Riemann</h4>';
 html += `<p><strong>Jenis:</strong> Riemann ${riemannTypeText}</p>`;
 html += `<p>Partisi: ${hasil.partisi} interval</p>`;
-html += `<p>Δx = (${xMax.toFixed(2)} - ${xMin.toFixed(2)}) / ${hasil.partisi} = ${((xMax-xMin)/hasil.partisi).toFixed(4)}</p>`;
-html += `<p>Luas ≈ ${formatAngka(hasil.riemann, 3)} m²</p>`;
-html += `<p class="hasil">Error: ${hasil.errorRiemann.toFixed(2)}%</p>`;
+html += `<p>Δx = (${xMax.toFixed(2)} - ${xMin.toFixed(2)}) / ${hasil.partisi} = ${((xMax-xMin)/hasil.partisi).toFixed(4)} meter</p>`;
+html += `<p>Luas ≈ ${formatAngka(hasil.riemann, presisi)} m²</p>`;
+html += `<p class="hasil">Error: ${hasil.errorRiemann.toFixed(presisi)}%</p>`;
 html += '</div>';
     
     // Trapezoida
 const trapezoidaText = hasil.adaptiveTrap ? 
     'Adaptive (partisi lebih rapat di area melengkung)' : 
     'Uniform (partisi sama rata)';
+const hTrap = (xMax - xMin) / hasil.partisi;
 
 html += '<div class="perhitungan-step">';
 html += '<h4>📊 Metode Trapezoida</h4>';
 html += `<p><strong>Jenis:</strong> ${trapezoidaText}</p>`;
 html += `<p>Partisi: ${hasil.partisi} interval</p>`;
-html += `<p>Luas ≈ ${formatAngka(hasil.trapezoida, 3)} m²</p>`;
-html += `<p class="hasil">Error: ${hasil.errorTrapezoida.toFixed(2)}%</p>`;
+html += `<p>Rumus: Luas ≈ Δx · (½f₀ + f₁ + f₂ + ... + fₙ₋₁ + ½fₙ)</p>`;
+html += `<p>Δx = (${xMax.toFixed(2)} - ${xMin.toFixed(2)}) / ${hasil.partisi} = ${hTrap.toFixed(4)} meter</p>`;
+html += `<p>Luas ≈ ${formatAngka(hasil.trapezoida, presisi)} m²</p>`;
+html += `<p class="hasil">Error: ${hasil.errorTrapezoida.toFixed(presisi)}%</p>`;
 html += '</div>';
     
     // Simpson
@@ -903,12 +925,24 @@ const simpsonTypeText = {
     'auto': 'Simpson Auto (Gabungan)'
 }[hasil.simpsonType] || 'Simpson 1/3';
 
+let simpsonRumus = '';
+if (hasil.simpsonType === '13') {
+    simpsonRumus = 'Luas ≈ (h/3) · (y₀ + 4y₁ + 2y₂ + 4y₃ + ... + yₙ)';
+} else if (hasil.simpsonType === '38') {
+    simpsonRumus = 'Luas ≈ (3h/8) · (y₀ + 3y₁ + 3y₂ + 2y₃ + ... + yₙ)';
+} else {
+    simpsonRumus = 'Gabungan Simpson 1/3 dan 3/8 (auto)';
+}
+const hSimpson = (xMax - xMin) / hasil.partisi;
+
 html += '<div class="perhitungan-step">';
 html += '<h4>📈 Metode Simpson</h4>';
 html += `<p><strong>Jenis:</strong> ${simpsonTypeText}</p>`;
 html += `<p>Partisi: ${hasil.partisi} interval</p>`;
-html += `<p>Luas ≈ ${formatAngka(hasil.simpson, 3)} m²</p>`;
-html += `<p class="hasil">Error: ${hasil.errorSimpson.toFixed(2)}%</p>`;
+html += `<p>Rumus: ${simpsonRumus}</p>`;
+html += `<p>h = (${xMax.toFixed(2)} - ${xMin.toFixed(2)}) / ${hasil.partisi} = ${hSimpson.toFixed(4)} meter</p>`;
+html += `<p>Luas ≈ ${formatAngka(hasil.simpson, presisi)} m²</p>`;
+html += `<p class="hasil">Error: ${hasil.errorSimpson.toFixed(presisi)}%</p>`;
 html += '</div>';
     
     html += '</div></div>';
@@ -972,9 +1006,9 @@ if (luasRiemannElem) luasRiemannElem.textContent = formatAngka(hasil.riemann, pr
 if (luasTrapezoidaElem) luasTrapezoidaElem.textContent = formatAngka(hasil.trapezoida, presisi);
 if (luasSimpsonElem) luasSimpsonElem.textContent = formatAngka(hasil.simpson, presisi);
         
-        if (errorRiemannElem) errorRiemannElem.textContent = hasil.errorRiemann.toFixed(2) + '%';
-        if (errorTrapezoidaElem) errorTrapezoidaElem.textContent = hasil.errorTrapezoida.toFixed(2) + '%';
-        if (errorSimpsonElem) errorSimpsonElem.textContent = hasil.errorSimpson.toFixed(2) + '%';
+        if (errorRiemannElem) errorRiemannElem.textContent = hasil.errorRiemann.toFixed(presisi) + '%';
+        if (errorTrapezoidaElem) errorTrapezoidaElem.textContent = hasil.errorTrapezoida.toFixed(presisi) + '%';
+        if (errorSimpsonElem) errorSimpsonElem.textContent = hasil.errorSimpson.toFixed(presisi) + '%';
         
         const errors = [
             { metode: 'Riemann', error: hasil.errorRiemann },
@@ -989,7 +1023,7 @@ if (luasSimpsonElem) luasSimpsonElem.textContent = formatAngka(hasil.simpson, pr
         
         if (kesimpulanDetailElem) {
             kesimpulanDetailElem.innerHTML = `
-                Metode terbaik: <strong>${terbaik.metode}</strong> dengan error ${terbaik.error.toFixed(2)}%<br>
+                Metode terbaik: <strong>${terbaik.metode}</strong> dengan error ${terbaik.error.toFixed(presisi)}%<br>
                 <small style="color:#666;">Partisi: ${hasil.partisi} | Interpolasi: ${hasil.interpolasi}×</small>
             `;
         }
@@ -1020,10 +1054,131 @@ if (luasSimpsonElem) luasSimpsonElem.textContent = formatAngka(hasil.simpson, pr
         Simpson ${simpsonTypeText}
     `;
 }
+// ============================================================
+// FITUR KELILING MANUAL (override hasil hitung)
+// ============================================================
+const kelilingManualInput = document.getElementById('kelilingManual');
+const kelilingValueSpan = document.getElementById('kelilingValue');
+const hargaPagarInput = document.getElementById('hargaPagar');
+const totalBiayaSpan = document.getElementById('totalBiaya');
+
+// Fungsi untuk memperbarui tampilan keliling dan biaya
+function updateManualKeliling() {
+    if (!kelilingValueSpan || !totalBiayaSpan) return;
+    
+    let kelilingTerpakai = hasil.perimeter; // default dari hitungan
+    let isManual = false;
+    
+    // Jika input manual diisi dan valid
+    if (kelilingManualInput) {
+        let manualVal = parseFloat(kelilingManualInput.value);
+        if (!isNaN(manualVal) && manualVal > 0) {
+            kelilingTerpakai = manualVal;
+            isManual = true;
+        }
+    }
+    
+    // Tampilkan keliling dengan label manual jika perlu
+    if (isManual) {
+        kelilingValueSpan.innerHTML = `${formatAngka(kelilingTerpakai, presisi)} m <span style="font-size: 11px; color: #ff9800;">(manual)</span>`;
+    } else {
+        kelilingValueSpan.innerHTML = `${formatAngka(kelilingTerpakai, presisi)} m`;
+    }
+    
+    // Hitung total biaya
+    let harga = 0;
+    if (hargaPagarInput) harga = parseFloat(hargaPagarInput.value) || 0;
+    let total = harga * kelilingTerpakai;
+    totalBiayaSpan.textContent = 'Rp ' + formatAngka(total, 0).replace(',', '.');
+}
+
+// Pasang event listener untuk input manual dan harga
+if (kelilingManualInput) {
+    kelilingManualInput.removeEventListener('input', updateManualKeliling);
+    kelilingManualInput.addEventListener('input', updateManualKeliling);
+}
+if (hargaPagarInput) {
+    hargaPagarInput.removeEventListener('input', updateManualKeliling);
+    hargaPagarInput.addEventListener('input', updateManualKeliling);
+}
+
+// Jalankan sekali untuk inisialisasi (biaya awal)
+updateManualKeliling();
         
+// ============================================================
+// FITUR ESTIMASI BIBIT (dengan manual override luas)
+// ============================================================
+const jarakTanamInput = document.getElementById('jarakTanam');
+const luasManualBibitInput = document.getElementById('luasManualBibit');
+const jumlahBibitSpan = document.getElementById('jumlahBibit');
+
+function updateEstimasiBibit() {
+    if (!jumlahBibitSpan) return;
+    
+    // Tentukan luas yang dipakai: manual jika diisi, else dari hasil poligon
+    let luasTerpakai = hasil.poligon;
+    let isManualLuas = false;
+    if (luasManualBibitInput) {
+        let manualVal = parseFloat(luasManualBibitInput.value);
+        if (!isNaN(manualVal) && manualVal > 0) {
+            luasTerpakai = manualVal;
+            isManualLuas = true;
+        }
+    }
+    
+    // Jarak tanam
+    let jarak = parseFloat(jarakTanamInput?.value);
+    if (isNaN(jarak) || jarak <= 0) jarak = 1;
+    const luasPerTanaman = jarak * jarak;
+    let jumlah = Math.floor(luasTerpakai / luasPerTanaman);
+    
+    // Tampilkan dengan indikator manual jika perlu
+    if (isManualLuas) {
+        jumlahBibitSpan.innerHTML = `${jumlah.toLocaleString('id-ID')} pohon <span style="font-size: 11px; color: #ff9800;">(luas manual)</span>`;
+    } else {
+        jumlahBibitSpan.innerHTML = `${jumlah.toLocaleString('id-ID')} pohon`;
+    }
+    if (luasTerpakai === 0) jumlahBibitSpan.innerHTML = '- pohon';
+}
+
+// Pasang event listener
+if (jarakTanamInput) {
+    jarakTanamInput.removeEventListener('input', updateEstimasiBibit);
+    jarakTanamInput.addEventListener('input', updateEstimasiBibit);
+}
+if (luasManualBibitInput) {
+    luasManualBibitInput.removeEventListener('input', updateEstimasiBibit);
+    luasManualBibitInput.addEventListener('input', updateEstimasiBibit);
+}
+// Panggil sekali untuk inisialisasi
+updateEstimasiBibit();
+
         drawLahan(points, hasil);
-        tampilkanPerhitungan(points, hasil, xMin, xMax);
-        
+        tampilkanPerhitungan(points, hasil, xMin, xMax, presisi);
+        // Tampilkan keliling
+const kelilingElem = document.getElementById('kelilingValue');
+if (kelilingElem) {
+    kelilingElem.textContent = formatAngka(hasil.perimeter, presisi) + ' m';
+}
+
+// Fungsi untuk update biaya berdasarkan harga pagar
+const hargaInput = document.getElementById('hargaPagar');
+const totalBiayaElem = document.getElementById('totalBiaya');
+
+function updateBiaya() {
+    if (!hargaInput || !totalBiayaElem) return;
+    const harga = parseFloat(hargaInput.value) || 0;
+    const keliling = hasil.perimeter || 0;
+    const total = harga * keliling;
+    totalBiayaElem.textContent = 'Rp ' + formatAngka(total, 0).replace(',', '.');
+}
+
+if (hargaInput && totalBiayaElem) {
+    // Hapus event listener lama jika ada, lalu pasang yang baru
+    hargaInput.removeEventListener('input', updateBiaya);
+    hargaInput.addEventListener('input', updateBiaya);
+    updateBiaya(); // hitung langsung
+}
         if (loadingIndicator) loadingIndicator.style.display = 'none';
         showToast('✅ Perhitungan selesai!', 'success');
     }, 100);
@@ -1050,11 +1205,22 @@ function resetAll(){
     if (typeof resetMapPoints !== 'undefined') {
         resetMapPoints();
     }
-
+    // Reset estimasi bibit
+const luasManualBibitInput = document.getElementById('luasManualBibit');
+if (luasManualBibitInput) luasManualBibitInput.value = '';
+const jarakTanamInput = document.getElementById('jarakTanam');
+if (jarakTanamInput) jarakTanamInput.value = '2';
+const jumlahBibitSpan = document.getElementById('jumlahBibit');
+if (jumlahBibitSpan) jumlahBibitSpan.textContent = '- pohon';
+const kelilingManualInput = document.getElementById('kelilingManual');
+    if (kelilingManualInput) kelilingManualInput.value = '';
     const jumlahTitikElem = document.getElementById('jumlahTitik');
     if (jumlahTitikElem) jumlahTitikElem.value = 5;
     generateInputFields();
-    
+    const kelilingElem = document.getElementById('kelilingValue');
+if (kelilingElem) kelilingElem.textContent = '- meter';
+const totalBiayaElem = document.getElementById('totalBiaya');
+if (totalBiayaElem) totalBiayaElem.textContent = 'Rp 0';
     resetView();
     drawEmptyCanvas();
     
@@ -1220,9 +1386,9 @@ function exportHasil() {
             riemann: hasil.riemann.toFixed(presisi),
             trapezoida: hasil.trapezoida.toFixed(presisi),
             simpson: hasil.simpson.toFixed(presisi),
-            errorRiemann: hasil.errorRiemann.toFixed(2) + '%',
-            errorTrapezoida: hasil.errorTrapezoida.toFixed(2) + '%',
-            errorSimpson: hasil.errorSimpson.toFixed(2) + '%'
+            errorRiemann: hasil.errorRiemann.toFixed(presisi) + '%',
+            errorTrapezoida: hasil.errorTrapezoida.toFixed(presisi) + '%',
+            errorSimpson: hasil.errorSimpson.toFixed(presisi) + '%'
         },
         settings: {
             partisi: hasil.partisi,
@@ -1433,11 +1599,14 @@ canvas.addEventListener('touchcancel', endDrag);
 
 // Inisialisasi peta dengan koordinat default (UNIMED Medan)
 // Latitude: 3.5952, Longitude: 98.6722
-var map = L.map('lahanMap').setView([3.5952, 98.6722], 15);
+// Inisialisasi peta
+var map = L.map('lahanMap').setView([3.5952, 98.6722], 12);
 
-// Tambahkan tile layer dari OpenStreetMap
+// Tambahkan tile layer dari OpenStreetMap dengan pengaturan zoom
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxNativeZoom: 19, // Level zoom maksimal data yang tersedia
+    maxZoom: 22        // Level zoom maksimal yang bisa dilakukan user
 }).addTo(map);
 
 // Array untuk menyimpan titik dari peta
@@ -1659,7 +1828,7 @@ if (popupBody) {
     <div style="margin-bottom: 25px;">
         <h3 style="color: #2e7d32; margin-bottom: 10px;">🌾 TENTANG APLIKASI INI</h3>
         <p>Aplikasi <strong>Kalkulator Luas Lahan Pintar</strong> adalah alat bantu untuk menghitung luas lahan tidak beraturan menggunakan metode integral numerik. Dikembangkan sebagai project mata kuliah Kalkulus Integral (Bab 5 & Bab 7).</p>
-        <p><strong>Versi 3.0</strong> - Dengan 12 fitur lanjutan: Interpolasi, Skala, Presisi, Partisi, Riemann (3 varian), Simpson (3 varian), Trapezoida Adaptive, Import CSV, Export, Dark Mode, Peta Interaktif, Kalkulator Konversi Satuan.</p>
+        <p><strong>Versi 3.0</strong> - Dengan 14 fitur lanjutan: Interpolasi, Skala, Presisi, Partisi, Riemann (3 varian), Simpson (3 varian), Trapezoida Adaptive, Import CSV, Export, Dark Mode, Peta Interaktif, Kalkulator Konversi Satuan, Estimasi Pagar & Biaya, Estimasi Bibit/Tanaman.</p>
     </div>
     
     <!-- CARA PENGGUNAAN DASAR -->
@@ -1688,9 +1857,9 @@ if (popupBody) {
         </ul>
     </div>
     
-    <!-- ========== FITUR LANJUTAN (12 FITUR LENGKAP) ========== -->
+    <!-- ========== FITUR LANJUTAN (14 FITUR LENGKAP) ========== -->
     <div style="margin-bottom: 25px;">
-        <h3 style="color: #2e7d32; margin-bottom: 10px;">✨ FITUR LANJUTAN (12 Fitur)</h3>
+        <h3 style="color: #2e7d32; margin-bottom: 10px;">✨ FITUR LANJUTAN (14 Fitur)</h3>
         
         <!-- 1. INTERPOLASI -->
         <div style="margin-bottom: 15px; padding: 10px; background: #e8f5e9; border-radius: 8px;">
@@ -1802,6 +1971,20 @@ if (popupBody) {
             <p><strong>Cara Pakai:</strong> Masukkan nilai dalam m² pada kolom input, pilih satuan target, hasil konversi akan langsung muncul.</p>
             <p><strong>Manfaat:</strong> Memudahkan memahami skala luas lahan, misalnya untuk lahan pertanian yang biasa diukur dalam hektar.</p>
         </div>
+        <!-- 13. ESTIMASI PAGAR & BIAYA -->
+    <div style="margin-bottom: 15px; padding: 10px; background: #e8eaf6; border-radius: 8px;">
+    <h4 style="color: #283593; margin-bottom: 5px;">🧱 13. ESTIMASI PAGAR & BIAYA</h4>
+    <p><strong>Fungsi:</strong> Menghitung panjang batas lahan (keliling) dan estimasi biaya pagar.</p>
+    <p><strong>Cara Pakai:</strong> Setelah menghitung luas, keliling akan muncul otomatis. Masukkan harga pagar per meter, maka total biaya akan dihitung.</p>
+    <p><strong>Manfaat:</strong> Membantu perencanaan anggaran pemagaran lahan.</p>
+</div>
+<!-- 14. ESTIMASI BIBIT/TANAMAN -->
+<div style="margin-bottom: 15px; padding: 10px; background: #e8f5e9; border-radius: 8px;">
+    <h4 style="color: #2e7d32; margin-bottom: 5px;">🌱 14. ESTIMASI BIBIT / TANAMAN</h4>
+    <p><strong>Fungsi:</strong> Menghitung perkiraan jumlah bibit atau tanaman yang dapat ditanam pada lahan berdasarkan luas dan jarak tanam.</p>
+    <p><strong>Cara Pakai:</strong> Setelah menghitung luas, masukkan jarak tanam (dalam meter). Program akan menghitung jumlah tanaman (asumsi grid persegi). Anda juga dapat mengisi luas secara manual jika ingin simulasi tanpa hitung luas terlebih dahulu.</p>
+    <p><strong>Manfaat:</strong> Membantu perencanaan kebutuhan bibit untuk pertanian, perkebunan, atau kehutanan.</p>
+</div>
     </div>
     
     <!-- METODE PERHITUNGAN (LENGKAP DENGAN VARIAN) -->
