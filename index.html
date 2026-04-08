@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KALKULATOR LUAS LAHAN CERDAS - INTEGRAL NUMERIK</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Leaflet CSS (untuk tampilan peta) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>🌾 KALKULATOR LUAS LAHAN PINTAR</h1>
+            <p>Aplikasi Integral Numerik untuk Menghitung Luas Lahan Tidak Beraturan</p>
+            <p style="font-size: 14px; margin-top: 10px;">BAB 5 (Aplikasi Integral) & BAB 7 (Teknik Integrasi Numerik)</p>
+        </div>
+        
+        <!-- POPUP PANDUAN -->
+        <div id="popupPanduan" class="popup-overlay">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>📖 PANDUAN PENGGUNAAN</h2>
+                    <button id="tutupPopup" class="popup-close">×</button>
+                </div>
+                <div class="popup-body"></div>
+            </div>
+        </div>
+
+        <!-- TOMBOL BANTUAN -->
+        <button id="btnBantuan" class="bantuan-btn">?</button>
+        
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- LEFT PANEL: INPUT -->
+            <div class="panel-left">
+                <h2>📝 INPUT DATA LAHAN</h2>
+                
+                <div class="info-box">
+                    <p><strong>📍 Petunjuk:</strong> Masukkan titik koordinat (x,y) dalam meter.</p>
+                    <p><strong>📌 Urutkan:</strong> Searah jarum jam atau berlawanan.</p>
+                    <p><strong>📐 Minimal:</strong> 3 titik (segitiga).</p>
+                </div>
+                
+                <!-- Kontrol Jumlah Titik -->
+                <div class="input-group">
+                    <div class="input-field">
+                        <label>Jumlah Titik</label>
+                        <input type="number" id="jumlahTitik" min="3" max="20" value="5">
+                    </div>
+                    <div class="input-field">
+                        <label>&nbsp;</label>
+                        <button id="btnGenerate" class="btn btn-secondary" style="width:100%">🔄 Generate Input</button>
+                    </div>
+                </div>
+                
+                <!-- Container Input Titik -->
+                <div id="titikInputContainer" class="titik-container"></div>
+                
+                <!-- Tombol Aksi Utama -->
+                <div class="button-group">
+                    <button id="btnHitung" class="btn btn-primary" style="flex:2">🔍 HITUNG LUAS</button>
+                    <button id="btnReset" class="btn btn-warning" style="flex:1">↺ Reset</button>
+                    <button id="btnExport" class="btn btn-success" style="flex:1">📥 Export</button>
+                </div>
+                
+                <!-- Preset Bentuk -->
+                <div class="preset-section">
+                    <div class="preset-title">📋 CONTOH BENTUK LAHAN:</div>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" data-preset="persegi">⬜ Persegi (5×5)</button>
+                        <button class="preset-btn" data-preset="segitiga">🔺 Segitiga (6×5)</button>
+                        <button class="preset-btn" data-preset="trapesium">🔷 Trapesium</button>
+                        <button class="preset-btn" data-preset="lahanL">↩️ Lahan L</button>
+                        <button class="preset-btn" data-preset="lingkaran">⭕ 8 Titik Lingkaran</button>
+                        <button class="preset-btn" data-preset="acak">📊 Poligon Acak</button>
+                    </div>
+                </div>
+                
+                <!-- FITUR LANJUTAN -->
+                <div class="advanced-features">
+                    <h3 style="color:#7b1fa2; margin-bottom:15px;">✨ FITUR LANJUTAN</h3>
+                    
+                    <div class="feature-grid">
+                        <!-- Fitur 1: Interpolasi -->
+                        <div class="feature-item">
+                            <label>🔄 INTERPOLASI</label>
+                            <select id="fiturInterpolasi">
+                                <option value="1">Tanpa Interpolasi</option>
+                                <option value="2" selected>Interpolasi 2×</option>
+                                <option value="3">Interpolasi 3× (Halus)</option>
+                                <option value="4">Interpolasi 4× (Sangat Halus)</option>
+                            </select>
+                            <div class="tooltip">Menghaluskan kurva dengan menambah titik</div>
+                        </div>
+                        
+                        <!-- Fitur 2: Skala -->
+                        <div class="feature-item">
+                            <label>📏 SKALA GAMBAR</label>
+                            <input type="number" id="fiturSkala" min="1" max="100" value="20" step="1">
+                            <div class="tooltip">Atur zoom visualisasi</div>
+                        </div>
+                        
+                        <!-- Fitur 3: Presisi -->
+                        <div class="feature-item">
+                            <label>🎯 PRESISI</label>
+                            <select id="fiturPresisi">
+                                <option value="2">2 desimal</option>
+                                <option value="3" selected>3 desimal</option>
+                                <option value="4">4 desimal</option>
+                            </select>
+                            <div class="tooltip">Jumlah angka di belakang koma</div>
+                        </div>
+                        
+                        <!-- Fitur 4: Partisi -->
+                        <div class="feature-item">
+                            <label>📊 PARTISI</label>
+                            <select id="fiturPartisi">
+                                <option value="100">Kasar (100)</option>
+                                <option value="200" selected>Sedang (200)</option>
+                                <option value="500">Halus (500)</option>
+                                <option value="1000">Sangat Halus (1000)</option>
+                            </select>
+                            <div class="tooltip">Semakin halus semakin akurat</div>
+                        </div>
+                        
+                        <!-- Fitur 5: Jenis Riemann -->
+<div class="feature-item">
+    <label>📐 JENIS RIEMANN</label>
+    <select id="fiturRiemannType">
+        <option value="kiri" selected>Riemann Kiri (Left)</option>
+        <option value="kanan">Riemann Kanan (Right)</option>
+        <option value="tengah">Riemann Tengah (Midpoint)</option>
+    </select>
+    <div class="tooltip">Posisi titik pengambilan tinggi</div>
+</div>
+
+<!-- Fitur 6: Jenis Simpson -->
+<div class="feature-item">
+    <label>📈 JENIS SIMPSON</label>
+    <select id="fiturSimpsonType">
+        <option value="13" selected>Simpson 1/3</option>
+        <option value="38">Simpson 3/8</option>
+        <option value="auto">Auto (Gabungan)</option>
+    </select>
+    <div class="tooltip">1/3 untuk n genap, 3/8 untuk n kelipatan 3</div>
+</div>
+
+<!-- Fitur 7: Trapezoida Adaptive -->
+<div class="feature-item">
+    <label>🔄 TRAPEZOIDA</label>
+    <select id="fiturAdaptiveTrap">
+        <option value="false" selected>Uniform (Sama Rata)</option>
+        <option value="true">Adaptive (Rapat di Lengkung)</option>
+    </select>
+    <div class="tooltip">Adaptive: partisi lebih rapat di area yang melengkung</div>
+</div>
+
+<!-- Fitur 8: Dark Mode -->
+<div class="feature-item">
+    <label>🌓 DARK MODE</label>
+    <select id="fiturDarkMode">
+        <option value="light" selected>🌞 Terang (Light)</option>
+        <option value="dark">🌙 Gelap (Dark)</option>
+    </select>
+    <div class="tooltip">Ubah tema tampilan aplikasi</div>
+</div>
+
+                        <!-- Fitur 9: Import CSV -->
+                        <div class="feature-item">
+                            <label>📁 IMPORT CSV</label>
+                            <input type="file" id="fileCSV" accept=".csv,.txt" style="width:100%; font-size:11px;">
+                            <button id="btnImport" class="btn btn-success" style="width:100%; margin-top:5px; padding:5px">Import</button>
+                        </div>
+                    </div>
+                   
+                    <!-- Info Interpolasi -->
+                    <div class="info-interpolasi" id="infoInterpolasi">
+                        <strong>💡 STATUS:</strong> Siap menghitung. Partisi: 200
+                    </div>
+                </div>
+
+                <!-- KALKULATOR KONVERSI SATUAN LUAS -->
+<div class="konversi-satuan" style="margin-top: 20px; padding: 15px; background: var(--panel-bg); border-radius: 10px; border: 1px solid var(--border-color);">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+        <span style="font-size: 18px;">🔄</span>
+        <h4 style="margin: 0; color: var(--success);">KONVERSI SATUAN LUAS</h4>
+    </div>
+    
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;">
+        <div style="flex: 2; min-width: 120px;">
+            <label style="display: block; font-size: 12px; margin-bottom: 4px; color: var(--text-secondary);">Nilai (m²)</label>
+            <input type="number" id="konversiInput" value="1000" step="100" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-primary);">
+        </div>
+        <div style="flex: 1.5; min-width: 100px;">
+            <label style="display: block; font-size: 12px; margin-bottom: 4px; color: var(--text-secondary);">Satuan Target</label>
+            <select id="konversiSatuanTarget" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-primary);">
+                <option value="hektar">Hektar (ha)</option>
+                <option value="are">Are (a)</option>
+                <option value="km2">Kilometer Persegi (km²)</option>
+                <option value="m2">Meter Persegi (m²)</option>
+            </select>
+        </div>
+        <div style="flex: 2; min-width: 140px;">
+            <label style="display: block; font-size: 12px; margin-bottom: 4px; color: var(--text-secondary);">Hasil Konversi</label>
+            <div id="konversiHasil" style="background: var(--success-light); padding: 8px; border-radius: 6px; font-weight: bold; text-align: center; color: var(--success-dark);">0 ha</div>
+        </div>
+    </div>
+    <p style="font-size: 11px; margin-top: 10px; color: var(--text-secondary);">💡 Masukkan luas dalam m², pilih satuan target, hasil langsung berubah.</p>
+</div>
+            </div>
+           
+            <!-- RIGHT PANEL: HASIL -->
+            <div class="panel-right">
+               <!-- PETA INTERAKTIF -->
+<div class="map-container" style="margin: 0 25px 25px 25px;">
+    <div class="map-header" style="background: var(--success); color: white; padding: 10px 15px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center;">
+        <strong>🗺️ KLIK PADA PETA UNTUK MENENTUKAN BATAS LAHAN</strong>
+        <button id="btnHapusTitikTerakhir" style="background: #ff6f00; color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer;">↩️ Hapus Terakhir</button>
+        <button id="btnResetPeta" style="background: #c62828; color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer;">🗑️ Reset Semua </button>
+    </div>
+    <div id="lahanMap" style="height: 350px; width: 100%; border: 1px solid var(--border-color); border-radius: 0 0 8px 8px;"></div>
+    <p class="caption" style="margin-top: 5px; font-size: 11px;">💡 Klik pada peta untuk menambahkan titik. Klik tombol "Reset Semua" untuk menghapus semua titik.</p>
+</div>
+                <h2>📊 HASIL PERHITUNGAN</h2>
+                
+                <!-- CANVAS VISUALISASI -->
+                <div class="canvas-container">
+                    <canvas id="lahanCanvas" width="600" height="400"></canvas>
+                    <div class="canvas-controls">
+                        <button id="btnZoomIn" class="canvas-btn">➕</button>
+                        <button id="btnZoomOut" class="canvas-btn">➖</button>
+                        <button id="btnResetView" class="canvas-btn">⟲</button>
+                    </div>
+                </div>
+                
+                <!-- TABEL HASIL -->
+                <div class="table-container">
+                    <table id="tabelHasil">
+                        <thead>
+                            <tr>
+                                <th>METODE</th>
+                                <th>LUAS (m²)</th>
+                                <th>ERROR (%)</th>
+                                <th>KETERANGAN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="metode-polygon">
+                                <td><strong>Poligon (Referensi)</strong></td>
+                                <td id="luasPoligon">-</td>
+                                <td>0.00</td>
+                                <td>Geometri Eksak (tepat)</td>
+                            </tr>
+                            <tr class="metode-riemann">
+                                <td>Riemann Sum</td>
+                                <td id="luasRiemann">-</td>
+                                <td id="errorRiemann">-</td>
+                                <td>Persegi Panjang</td>
+                            </tr>
+                            <tr class="metode-trapezoida">
+                                <td>Trapezoida</td>
+                                <td id="luasTrapezoida">-</td>
+                                <td id="errorTrapezoida">-</td>
+                                <td>Trapesium</td>
+                            </tr>
+                            <tr class="metode-simpson">
+                                <td>Simpson</td>
+                                <td id="luasSimpson">-</td>
+                                <td id="errorSimpson">-</td>
+                                <td>Parabola</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- DETAIL PERHITUNGAN -->
+                <div id="perhitunganContainer"></div>
+
+                <!-- KESIMPULAN -->
+                <div class="kesimpulan" id="kesimpulanBox">
+                    <h3>📌 KESIMPULAN</h3>
+                    <p id="kesimpulanText">⏳ Silakan masukkan titik dan tekan HITUNG LUAS</p>
+                    <p id="kesimpulanDetail" style="font-size:13px; margin-top:8px;"></p>
+                    <div id="loadingIndicator" class="loading" style="display: none;">⏳ Menghitung...</div>
+                </div>
+                
+                <!-- INFORMASI METODE -->
+                <div class="info-metode">
+                    <p><strong>📚 Keterkaitan dengan Materi Kuliah:</strong></p>
+                    <ul>
+                        <li><strong>BAB 5 (Aplikasi Integral):</strong> Menghitung luas lahan = aplikasi integral tentu</li>
+                        <li><strong>BAB 7 (Teknik Integrasi):</strong> Metode Riemann, Trapezoida, Simpson adalah teknik integrasi numerik</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+       <!-- VISUALISASI PARTISI & PENJELASAN INTEGRAL (DILUAR MAIN CONTENT) -->
+<div class="integral-section">
+    <div class="integral-header" id="integralHeader">
+        <h3>📚 BAGAIMANA INTEGRAL BEKERJA?</h3>
+        <span class="toggle-icon" id="integralIcon">▼</span>
+    </div>
+    
+    <div class="integral-content" id="integralContent">
+        <!-- Masalah Nyata -->
+        <div class="real-world-box">
+            <h4>🌍 MASALAH NYATA: Mengukur Lahan Pertanian</h4>
+            <p>Pak Tani memiliki lahan berbentuk tidak beraturan di pinggir sungai. 
+               Dengan alat ukur GPS, ia mendapatkan 8 titik koordinat batas lahan.
+               <strong>Bagaimana menghitung luasnya secara akurat?</strong></p>
+            <p>Tanpa kalkulus: harus bagi jadi segitiga-segitiga (tidak akurat).<br>
+               <strong>Dengan kalkulus: integral membagi lahan menjadi irisan tipis!</strong></p>
+        </div>
+        
+        <!-- Konsep Dasar Integral -->
+<div class="integral-explanation">
+    <h4>📐 KONSEP DASAR INTEGRAL</h4>
+    <div class="formula-box">
+        <p><strong>Rumus Dasar:</strong> Luas = ∫ f(x) dx</p>
+        <p class="small">"Membagi area menjadi irisan-irisan tipis, lalu menjumlahkan luasnya"</p>
+    </div>
+    
+    <div style="margin-top: 15px;">
+        <p><strong>🔢 Langkah-langkah Menghitung Luas dengan Integral:</strong></p>
+        <ol style="margin-left: 25px; margin-top: 8px; line-height: 1.8;">
+            <li>Bagi daerah lahan menjadi <strong>irisan-irisan vertikal</strong> dengan lebar Δx (sangat kecil)</li>
+            <li>Setiap irisan dianggap sebagai <strong>persegi panjang</strong> dengan tinggi f(x)</li>
+            <li>Luas satu irisan ≈ f(x) × Δx</li>
+            <li>Jumlahkan semua irisan: Σ f(x) × Δx</li>
+            <li>Jika Δx → 0 (mendekati nol), jumlah Riemann menjadi <strong>integral tentu</strong>: ∫ f(x) dx</li>
+        </ol>
+    </div>
+</div>
+        
+        <!-- 4 Metode Perhitungan - Versi Rapi -->
+        <div class="integral-explanation" style="margin-top: 20px;">
+            <h4>🧮 4 METODE PERHITUNGAN LUAS</h4>
+            
+            <div style="margin-top: 15px;">
+    <!-- Poligon -->
+    <div class="dark-mode-card" style="background: #d5fbd7; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+        <strong style="color: #2e7d32;">📐 1. Poligon (Shoelace) - Referensi Eksak</strong>
+        <p style="margin: 5px 0 0 20px; font-size: 13px;">📌 Rumus: ½|Σ(xᵢyᵢ₊₁ - xᵢ₊₁yᵢ)| → hasil geometri tepat (bukan aproksimasi)</p>
+    </div>
+    
+    <!-- Riemann -->
+    <div class="dark-mode-card" style="background: #e1f5fe; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+        <strong style="color: #0288d1;">🧱 2. Riemann - 3 Varian</strong>
+        <p style="margin: 5px 0 0 20px; font-size: 13px;">📌 <strong>Riemann Kiri:</strong> ambil tinggi di ujung kiri → underestimate (kurang)</p>
+        <p style="margin: 2px 0 0 20px; font-size: 13px;">📌 <strong>Riemann Kanan:</strong> ambil tinggi di ujung kanan → overestimate (lebih)</p>
+        <p style="margin: 2px 0 0 20px; font-size: 13px;">📌 <strong>Riemann Tengah:</strong> ambil tinggi di titik tengah → paling akurat</p>
+    </div>
+    
+    <!-- Trapezoida -->
+    <div class="dark-mode-card" style="background: #fff3e0; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+        <strong style="color: #ff6f00;">📊 3. Trapezoida - 2 Varian</strong>
+        <p style="margin: 5px 0 0 20px; font-size: 13px;">📌 <strong>Uniform:</strong> partisi sama rata, cepat dan sederhana</p>
+        <p style="margin: 2px 0 0 20px; font-size: 13px;">📌 <strong>Adaptive:</strong> partisi lebih rapat di area melengkung, lebih akurat</p>
+    </div>
+    
+    <!-- Simpson -->
+    <div class="dark-mode-card" style="background: #f3e5f5; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+        <strong style="color: #7b1fa2;">📈 4. Simpson - 3 Varian</strong>
+        <p style="margin: 5px 0 0 20px; font-size: 13px;">📌 <strong>Simpson 1/3:</strong> aproksimasi parabola, partisi genap</p>
+        <p style="margin: 2px 0 0 20px; font-size: 13px;">📌 <strong>Simpson 3/8:</strong> aproksimasi kubik, partisi kelipatan 3</p>
+        <p style="margin: 2px 0 0 20px; font-size: 13px;">📌 <strong>Auto:</strong> pilih metode terbaik otomatis</p>
+    </div>
+</div>
+        </div>
+        
+        <!-- Visualisasi Partisi -->
+        <div class="partisi-visualization">
+            <h4>📊 VISUALISASI PARTISI (CARA KERJA INTEGRAL)</h4>
+            <div class="partisi-controls">
+                <label>Jumlah Partisi:</label>
+                <input type="range" id="partisiSlider" min="5" max="50" value="10">
+                <span id="partisiValue">10</span>
+                <button id="btnTerapkanPartisi" class="btn-small">Terapkan</button>
+            </div>
+            
+            <div class="partisi-canvas-container">
+                <canvas id="partisiCanvas" width="300" height="200"></canvas>
+                <p class="caption">Area dibagi menjadi <span id="jumlahPartisiText">10</span> irisan vertikal</p>
+                <p class="caption" style="font-size: 11px;">💡 Semakin banyak partisi, hasil semakin mendekati luas sebenarnya</p>
+            </div>
+            
+            <div class="integral-role">
+    <p><strong>🔍 PERAN INTEGRAL DALAM PROGRAM:</strong></p>
+    <ul>
+        <li><strong>Irisan (Partisi):</strong> Lahan dibagi menjadi n bagian vertikal. Nilai n diatur melalui fitur <strong>Partisi</strong> (100, 200, 500, 1000).</li>
+        <li><strong>Lebar irisan (Δx):</strong> Δx = (xₘₐₖₛ - xₘᵢₙ) / n → semakin besar n, semakin kecil Δx, hasil semakin akurat.</li>
+        <li><strong>Tinggi irisan (f(x)):</strong> Ditentukan dari titik potong garis vertikal dengan batas lahan. Bergantung pada metode yang dipilih:
+            <ul style="margin-left: 30px; margin-top: 5px;">
+                <li><strong>Riemann Kiri:</strong> f(x) diambil di ujung kiri interval</li>
+                <li><strong>Riemann Kanan:</strong> f(x) diambil di ujung kanan interval</li>
+                <li><strong>Riemann Tengah:</strong> f(x) diambil di titik tengah interval</li>
+                <li><strong>Trapezoida:</strong> f(x) diambil di kedua ujung, lalu dirata-rata</li>
+                <li><strong>Simpson:</strong> f(x) diambil dengan bobot parabola/kubik</li>
+            </ul>
+        </li>
+        <li><strong>Jumlah Riemann:</strong> Σ (tinggi × lebar) → aproksimasi luas total lahan.</li>
+        <li><strong>Limit n → ∞:</strong> Jika Δx → 0 (n sangat besar), jumlah Riemann mendekati nilai eksak: ∫ f(x) dx.</li>
+        <li><strong>Implementasi dalam Program:</strong>
+            <ul style="margin-left: 30px; margin-top: 5px;">
+                <li>Pengguna memasukkan titik koordinat lahan</li>
+                <li>Program membagi lahan menjadi n irisan vertikal</li>
+                <li>Menghitung luas dengan 4 metode (Poligon, Riemann, Trapezoida, Simpson)</li>
+                <li>Membandingkan error terhadap metode Poligon (referensi eksak)</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+        </div>
+    </div>
+</div>
+        <!-- PENJELASAN METODE & MATERI KULIAH (BAB 5 & BAB 7) -->
+<div class="metode-section" style="margin: 0 25px 25px 25px;">
+    <div class="roll-header" id="metodeHeader">
+        <span>📚 PENJELASAN METODE & MATERI KULIAH (BAB 5 & BAB 7)</span>
+        <span class="roll-icon" id="metodeIcon">▶</span>
+    </div>
+    <div class="roll-content" id="metodeContent">
+        <div style="padding: 20px; background: var(--panel-bg); border-radius: 0 0 8px 8px;">
+            
+            <!-- BAB 5: APLIKASI INTEGRAL -->
+            <h4 style="color: var(--success); margin-bottom: 15px;">📐 BAB 5: APLIKASI INTEGRAL</h4>
+            <p>Dalam program ini, integral digunakan untuk menghitung luas lahan dengan konsep:</p>
+            <ul style="margin-left: 20px; margin-top: 10px; margin-bottom: 20px;">
+                <li><strong>Luas = ∫ f(x) dx</strong> - Membagi area menjadi irisan tipis</li>
+                <li>Setiap irisan memiliki luas = tinggi × lebar (Δx)</li>
+                <li>Menjumlahkan semua irisan = integral tentu</li>
+                <li>Semakin kecil Δx (partisi banyak), semakin akurat hasilnya</li>
+            </ul>
+            
+            <!-- BAB 7: TEKNIK INTEGRASI NUMERIK -->
+            <h4 style="color: var(--info); margin: 20px 0 15px;">🧮 BAB 7: TEKNIK INTEGRASI NUMERIK</h4>
+            
+            <!-- Metode 1: Poligon -->
+<div class="dark-mode-card" style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px;">
+    <h5 style="color: #2e7d32;">📐 1. Metode Poligon (Shoelace) - Referensi</h5>
+    <p><strong>Rumus:</strong> Luas = ½|Σ(xᵢyᵢ₊₁ - xᵢ₊₁yᵢ)|</p>
+    <p>Menghitung luas secara geometris dari koordinat titik. <em>Metode eksak, digunakan sebagai referensi kebenaran.</em></p>
+</div>
+
+<!-- Metode 2: Riemann -->
+<div class="dark-mode-card" style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px;">
+    <h5 style="color: #0288d1;">🧱 2. Metode Riemann</h5>
+    <p><strong>Rumus:</strong> Luas ≈ Σ f(x) · Δx</p>
+    <p>Membagi area menjadi persegi panjang. Tersedia <strong>3 varian</strong>:</p>
+    <ul style="margin-left: 20px; margin-top: 8px;">
+        <li><strong>Riemann Kiri:</strong> Mengambil tinggi dari titik kiri interval → underestimate</li>
+        <li><strong>Riemann Kanan:</strong> Mengambil tinggi dari titik kanan interval → overestimate</li>
+        <li><strong>Riemann Tengah:</strong> Mengambil tinggi dari titik tengah interval → paling akurat</li>
+    </ul>
+    <p><em>Error ~0.5-2% tergantung bentuk lahan.</em></p>
+</div>
+
+<!-- Metode 3: Trapezoida -->
+<div class="dark-mode-card" style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px;">
+    <h5 style="color: #ff6f00;">📊 3. Metode Trapezoida</h5>
+    <p><strong>Rumus:</strong> Luas ≈ Σ (f(xᵢ) + f(xᵢ₊₁))/2 · Δx</p>
+    <p>Menghubungkan titik dengan garis lurus membentuk trapesium. Tersedia <strong>2 varian</strong>:</p>
+    <ul style="margin-left: 20px; margin-top: 8px;">
+        <li><strong>Uniform:</strong> Partisi sama rata, cepat dan sederhana</li>
+        <li><strong>Adaptive:</strong> Partisi lebih rapat di area melengkung, lebih akurat</li>
+    </ul>
+    <p><em>Error ~0.25-1% tergantung bentuk lahan.</em></p>
+</div>
+
+<!-- Metode 4: Simpson -->
+<div class="dark-mode-card" style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px;">
+    <h5 style="color: #7b1fa2;">📈 4. Metode Simpson</h5>
+    <p>Mengaproksimasi dengan parabola/kubik. Tersedia <strong>3 varian</strong>:</p>
+    <ul style="margin-left: 20px; margin-top: 8px;">
+        <li><strong>Simpson 1/3:</strong> Aproksimasi parabola, partisi genap</li>
+        <li><strong>Simpson 3/8:</strong> Aproksimasi kubik, partisi kelipatan 3</li>
+        <li><strong>Auto:</strong> Pilih metode terbaik otomatis</li>
+    </ul>
+    <p><em>Error ~0.05-0.5% untuk bentuk mulus, metode paling akurat.</em></p>
+</div>
+            
+            <!-- Perbandingan Akurasi - TABEL -->
+            <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 8px;">
+                <h5 style="color: #2e7d32; margin-bottom: 15px;">📊 PERBANDINGAN AKURASI (partisi 500, bentuk mulus)</h5>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <thead>
+                            <tr style="background: #c8e6c9;">
+                                <th style="padding: 10px; text-align: left;">Metode</th>
+                                <th style="padding: 10px; text-align: center;">Error</th>
+                                <th style="padding: 10px; text-align: center;">Kecepatan</th>
+                                <th style="padding: 10px; text-align: left;">Kapan Terbaik</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Riemann Kiri/Kanan</strong></td><td style="text-align:center;">~1-5%</td><td style="text-align:center;">⚡ Cepat</td><td>Estimasi cepat</td></tr>
+                            <tr><td><strong>Riemann Tengah</strong></td><td style="text-align:center;">~0.5-2%</td><td style="text-align:center;">⚡ Cepat</td><td>Akurasi lebih baik</td></tr>
+                            <tr><td><strong>Trapezoida Uniform</strong></td><td style="text-align:center;">~0.25-1%</td><td style="text-align:center;">🚀 Sangat Cepat</td><td>Bentuk sederhana</td></tr>
+                            <tr><td><strong>Trapezoida Adaptive</strong></td><td style="text-align:center;">~0.1-0.5%</td><td style="text-align:center;">🐌 Sedang</td><td>Bentuk melengkung/cekung</td></tr>
+                            <tr><td><strong>Simpson (1/3, 3/8, Auto)</strong></td><td style="text-align:center;">~0.05-0.2%</td><td style="text-align:center;">🐌 Sedang</td><td>Akurasi tertinggi</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="margin-top: 12px; font-size: 11px; color: #666;">*Error dipengaruhi partisi & kompleksitas bentuk. Partisi lebih banyak = error lebih kecil.</p>
+            </div>
+            
+            <!-- Catatan Khusus -->
+            <div style="margin-top: 15px; padding: 12px; background: #fff3e0; border-radius: 8px;">
+                <h5 style="color: #ff6f00;">💡 CATATAN: Trapezoida Adaptive</h5>
+                <p>Metode Adaptive secara otomatis membagi interval lebih rapat di area yang melengkung. Hasilnya: <strong>akurasi lebih tinggi dengan jumlah partisi yang sama</strong> dibandingkan metode Uniform.</p>
+            </div>
+            <div style="margin-top: 15px; padding: 12px; background: #f3e5f5; border-radius: 8px;">
+                <h5 style="color: #7b1fa2;">💡 CATATAN: Simpson Auto</h5>
+                <p>Mode Auto akan memilih Simpson 1/3 jika partisi genap, dan Simpson 3/8 jika partisi kelipatan 3.</p>
+            </div>
+            
+        </div>
+    </div>
+</div>
+        <!-- FOOTER -->
+        <div class="footer">
+            <div class="footer-grid">
+                <div class="footer-card">
+                    <h4>📐 Metode Poligon</h4>
+                    <p>Rumus Shoelace (tali sepatu). Menghitung luas poligon secara eksak dari koordinat titik.</p>
+                    <span class="badge">Referensi Kebenaran</span>
+                </div>
+                <div class="footer-card">
+                    <h4>🧮 Metode Riemann</h4>
+                    <p>Membagi area menjadi persegi panjang. Luas = Σ f(x) · Δx</p>
+                    <span class="badge">BAB 7: Teknik Numerik</span>
+                </div>
+                <div class="footer-card">
+                    <h4>📊 Metode Trapezoida</h4>
+                    <p>Mendekati kurva dengan trapesium. Lebih akurat dari Riemann.</p>
+                    <span class="badge">BAB 7: Teknik Numerik</span>
+                </div>
+                <div class="footer-card">
+                    <h4>📈 Metode Simpson</h4>
+                    <p>Mendekati dengan parabola. Paling akurat untuk kurva mulus.</p>
+                    <span class="badge">BAB 7: Teknik Numerik</span>
+                </div>
+            </div>
+            <p style="opacity:0.7; font-size:12px;">© 2026 - Project Kalkulus Integral | S1 Ilmu Komputer UNIMED</p>
+            <p style="opacity:0.5; font-size:11px;">Versi 3.0 - Dengan peningkatan presisi dan visualisasi</p>
+        </div>
+    </div>
+    
+    <!-- Toast Notifikasi -->
+    <div id="toast" class="toast"></div>
+    
+    <script src="script.js"></script>
+    <!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</body>
+</html>
