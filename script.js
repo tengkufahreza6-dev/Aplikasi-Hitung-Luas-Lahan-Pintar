@@ -1160,7 +1160,12 @@ const kelilingElem = document.getElementById('kelilingValue');
 if (kelilingElem) {
     kelilingElem.textContent = formatAngka(hasil.perimeter, presisi) + ' m';
 }
-
+        // Auto update konversi satuan dengan luas poligon (meter persegi)
+        const konversiInput = document.getElementById('konversiInput');
+        if (konversiInput) {
+            konversiInput.value = hasil.poligon.toFixed(presisi);
+            updateKonversi();  // memicu perhitungan ulang konversi
+        }
 // Fungsi untuk update biaya berdasarkan harga pagar
 const hargaInput = document.getElementById('hargaPagar');
 const totalBiayaElem = document.getElementById('totalBiaya');
@@ -1558,7 +1563,13 @@ canvas.addEventListener('touchmove', (e) => {
     const touch = e.touches[0];
     drag(touch);
 });
-
+const btnKonversi = document.getElementById('btnKonversi');
+if (btnKonversi) {
+    btnKonversi.addEventListener('click', function() {
+        updateKonversi();
+        showToast('Konversi diperbarui', 'info');
+    });
+}
 canvas.addEventListener('touchend', endDrag);
 canvas.addEventListener('touchcancel', endDrag);
     
