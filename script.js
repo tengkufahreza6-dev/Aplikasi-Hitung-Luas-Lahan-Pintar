@@ -1621,7 +1621,7 @@ var markers = [];
 
 // Variabel untuk referensi titik pertama (konversi ke meter)
 var referencePoint = null;
-    // ========== MOBILE NAVIGATION (FLOATING KIRI BAWAH) ==========
+       // ========== MOBILE NAVIGATION (KIRI ATAS, DROPDOWN KE BAWAH) ==========
     const navBtn = document.getElementById('btnNavMobile');
     const navMenu = document.getElementById('navMobileMenu');
 
@@ -1637,21 +1637,19 @@ var referencePoint = null;
 
     if (navBtn && navMenu) {
         window.addEventListener('resize', toggleNavButton);
-        toggleNavButton(); // panggil saat load
+        toggleNavButton();
 
         navBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             navMenu.classList.toggle('show');
         });
 
-        // Tutup menu jika klik di luar
         document.addEventListener('click', (e) => {
             if (navMenu && !navBtn.contains(e.target) && !navMenu.contains(e.target)) {
                 navMenu.classList.remove('show');
             }
         });
 
-        // Scroll smooth ke target
         const menuButtons = navMenu.querySelectorAll('button');
         menuButtons.forEach(btn => {
             btn.addEventListener('click', () => {

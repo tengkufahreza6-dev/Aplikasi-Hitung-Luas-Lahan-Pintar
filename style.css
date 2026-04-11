@@ -2276,10 +2276,10 @@ body.dark-mode .estimasi-bibit small {
         right: 15px;
     }
 }
-/* ===== TOMBOL NAVIGASI MOBILE (KIRI BAWAH, FLOATING) ===== */
+/* ===== TOMBOL NAVIGASI MOBILE (KIRI ATAS, FLOATING) ===== */
 .nav-mobile-btn {
     position: fixed;
-    bottom: 100px;      /* berada di atas tombol bantuan (kanan bawah) jika ingin berbeda, bisa disesuaikan */
+    top: 20px;
     left: 20px;
     width: 50px;
     height: 50px;
@@ -2302,7 +2302,7 @@ body.dark-mode .estimasi-bibit small {
 
 .nav-mobile-menu {
     position: fixed;
-    bottom: 160px;
+    top: 80px;
     left: 20px;
     background: var(--card-bg);
     border-radius: 16px;
@@ -2311,7 +2311,7 @@ body.dark-mode .estimasi-bibit small {
     display: none;
     flex-direction: column;
     z-index: 1000;
-    min-width: 190px;
+    min-width: 220px;
 }
 .nav-mobile-menu button {
     background: none;
