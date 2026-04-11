@@ -30,11 +30,22 @@
 
         <!-- TOMBOL BANTUAN -->
         <button id="btnBantuan" class="bantuan-btn">?</button>
-        
+        <!-- Tombol navigasi mobile (kiri bawah, floating) -->
+<button id="btnNavMobile" class="nav-mobile-btn" style="display: none;">☰</button>
+
+<div id="navMobileMenu" class="nav-mobile-menu">
+    <button data-target="inputSection">📝 Input Data</button>
+    <button data-target="mapContainer">🗺️ Peta Interaktif</button>
+    <button data-target="tabelHasil">📊 Tabel Hasil</button>
+    <button data-target="lahanCanvas">📈 Canvas Visualisasi</button>
+    <button data-target="perhitunganContainer">🔍 Detail Perhitungan</button>
+    <button data-target="estimasiPagar">🧱 Estimasi Pagar</button>
+    <button data-target="estimasiBibit">🌱 Estimasi Bibit</button>
+</div>
         <!-- MAIN CONTENT -->
         <div class="main-content">
             <!-- LEFT PANEL: INPUT -->
-            <div class="panel-left">
+            <div class="panel-left" id="inputSection">
                 <h2>📝 INPUT DATA LAHAN</h2>
                 
                 <div class="info-box">
@@ -210,7 +221,7 @@
     <p style="font-size: 11px; margin-top: 10px; color: var(--text-secondary);">💡 Masukkan luas dalam m², pilih satuan target, hasil langsung berubah.</p>
 </div>
 <!-- ESTIMASI PANJANG PAGAR & BIAYA -->
-<div class="estimasi-pagar" style="margin-top: 20px; padding: 15px; background: var(--panel-bg); border-radius: 10px; border: 1px solid var(--border-color);">
+<div class="estimasi-pagar" id="estimasiPagar" style="margin-top: 20px; padding: 15px; background: var(--panel-bg); border-radius: 10px; border: 1px solid var(--border-color);">
     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
         <span style="font-size: 18px;">🧱</span>
         <h4 style="margin: 0; color: var(--warning);">ESTIMASI PAGAR & BIAYA</h4>
@@ -235,7 +246,7 @@
     <p style="font-size: 11px; margin-top: 10px;">💡 Hitung luas terlebih dahulu untuk melihat keliling.</p>
 </div>
 <!-- ESTIMASI KEBUTUHAN BIBIT/TANAMAN -->
-<div class="estimasi-bibit" style="margin-top: 20px; padding: 15px; background: var(--panel-bg); border-radius: 10px; border: 1px solid var(--border-color);">
+<div class="estimasi-bibit" id="estimasiBibit" style="margin-top: 20px; padding: 15px; background: var(--panel-bg); border-radius: 10px; border: 1px solid var(--border-color);">
     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
         <span style="font-size: 18px;">🌱</span>
         <h4 style="margin: 0; color: var(--success);">ESTIMASI BIBIT / TANAMAN</h4>
@@ -261,7 +272,7 @@
             <!-- RIGHT PANEL: HASIL -->
             <div class="panel-right">
                <!-- PETA INTERAKTIF -->
-<div class="map-container" style="margin: 0 25px 25px 25px;">
+<div class="map-container" id="mapContainer" style="margin: 0 25px 25px 25px;">
     <div class="map-header" style="background: var(--success); color: white; padding: 10px 15px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center;">
         <strong>🗺️ KLIK PADA PETA UNTUK MENENTUKAN BATAS LAHAN</strong>
         <button id="btnHapusTitikTerakhir" style="background: #ff6f00; color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer;">↩️ Hapus Terakhir</button>

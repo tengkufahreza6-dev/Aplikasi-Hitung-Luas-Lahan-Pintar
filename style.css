@@ -2276,3 +2276,76 @@ body.dark-mode .estimasi-bibit small {
         right: 15px;
     }
 }
+/* ===== TOMBOL NAVIGASI MOBILE (KIRI BAWAH, FLOATING) ===== */
+.nav-mobile-btn {
+    position: fixed;
+    bottom: 100px;      /* berada di atas tombol bantuan (kanan bawah) jika ingin berbeda, bisa disesuaikan */
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--success);
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    cursor: pointer;
+    z-index: 1000;
+    transition: 0.2s;
+    display: none;
+}
+.nav-mobile-btn:hover {
+    transform: scale(1.05);
+    background: var(--success-dark);
+}
+
+.nav-mobile-menu {
+    position: fixed;
+    bottom: 160px;
+    left: 20px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    padding: 8px 0;
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    min-width: 190px;
+}
+.nav-mobile-menu button {
+    background: none;
+    border: none;
+    padding: 12px 20px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: background 0.2s;
+}
+.nav-mobile-menu button:hover {
+    background: var(--success-light);
+}
+.nav-mobile-menu.show {
+    display: flex;
+}
+
+/* Sembunyikan di desktop (lebar > 768px) */
+@media (min-width: 769px) {
+    .nav-mobile-btn, .nav-mobile-menu {
+        display: none !important;
+    }
+}
+
+/* Dark mode untuk menu */
+body.dark-mode .nav-mobile-menu {
+    background: #2a2a3a;
+    border: 1px solid #4a4a5a;
+}
+body.dark-mode .nav-mobile-menu button {
+    color: #e0e0e0;
+}
+body.dark-mode .nav-mobile-menu button:hover {
+    background: #1e3a2f;
+}

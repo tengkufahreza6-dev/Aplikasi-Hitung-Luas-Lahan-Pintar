@@ -1621,7 +1621,51 @@ var markers = [];
 
 // Variabel untuk referensi titik pertama (konversi ke meter)
 var referencePoint = null;
+    // ========== MOBILE NAVIGATION (FLOATING KIRI BAWAH) ==========
+    const navBtn = document.getElementById('btnNavMobile');
+    const navMenu = document.getElementById('navMobileMenu');
 
+    function toggleNavButton() {
+        if (!navBtn) return;
+        if (window.innerWidth <= 768) {
+            navBtn.style.display = 'block';
+        } else {
+            navBtn.style.display = 'none';
+            if (navMenu) navMenu.classList.remove('show');
+        }
+    }
+
+    if (navBtn && navMenu) {
+        window.addEventListener('resize', toggleNavButton);
+        toggleNavButton(); // panggil saat load
+
+        navBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navMenu.classList.toggle('show');
+        });
+
+        // Tutup menu jika klik di luar
+        document.addEventListener('click', (e) => {
+            if (navMenu && !navBtn.contains(e.target) && !navMenu.contains(e.target)) {
+                navMenu.classList.remove('show');
+            }
+        });
+
+        // Scroll smooth ke target
+        const menuButtons = navMenu.querySelectorAll('button');
+        menuButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.dataset.target;
+                const targetEl = document.getElementById(targetId);
+                if (targetEl) {
+                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    navMenu.classList.remove('show');
+                } else {
+                    console.warn('Elemen dengan id "' + targetId + '" tidak ditemukan.');
+                }
+            });
+        });
+    }
 // Fungsi untuk konversi lintang/bujur ke koordinat meter
 function latLngToMeters(lat, lng, refLat, refLng) {
     // Konstanta: 1 derajat ≈ 111319.9 meter (di ekuator)
