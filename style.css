@@ -748,13 +748,21 @@ tr:nth-child(even) {
     padding: 12px 24px;
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    transform: translateX(400px);
-    transition: transform 0.3s;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
     z-index: 1000;
+    box-sizing: border-box;
+    max-width: 90vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
 }
 
 .toast.show {
-    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
 }
 
 .toast.error {

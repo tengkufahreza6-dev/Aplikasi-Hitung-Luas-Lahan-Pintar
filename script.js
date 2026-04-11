@@ -2197,5 +2197,10 @@ if (konversiInput && konversiSelect) {
     updateKonversi(); // inisialisasi
 }
     
-    showToast('🎉 Selamat datang di Kalkulator Luas Lahan v3.0', 'success');
+   // Tunda toast pertama hingga semua resource (termasuk gambar, peta) selesai dimuat
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        showToast('🎉 Selamat datang di Kalkulator Luas Lahan v3.0', 'success');
+    }, 300);
+});
 });
