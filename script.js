@@ -2149,5 +2149,5 @@ if (konversiInput && konversiSelect) {
     updateKonversi(); // inisialisasi
 }
     
-    showToast('🎉 Selamat datang di Kalkulator Luas Lahan v2.0', 'success');
+    showToast('🎉 Selamat datang di Kalkulator Luas Lahan v3.0', 'success');
 });
