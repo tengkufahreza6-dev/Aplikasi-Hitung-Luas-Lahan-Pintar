@@ -2141,51 +2141,51 @@ body.dark-mode .estimasi-pagar small,
 body.dark-mode .estimasi-bibit small {
     color: #aaa !important;
 }
-/* PERBAIKAN MOBILE - AGAR TIDAK KEPOTONG */
-@media (max-width: 768px) {
-    /* Container utama tidak boleh overflow */
-    .container {
+/* ============================================ */
+/* PERBAIKAN KHUSUS UNTUK HP (≤ 768px) - TIDAK MENGGANGGU DESKTOP */
+/* ============================================ */
+
+@media only screen and (max-width: 768px) {
+    /* Cegah overflow horizontal */
+    body, .container, .main-content, .panel-left, .panel-right {
         overflow-x: hidden;
-        width: 100%;
-    }
-
-    /* Main content jadi 1 kolom, pastikan padding tidak berlebihan */
-    .main-content {
-        grid-template-columns: 1fr !important;
-        gap: 15px;
-        padding: 15px;
-    }
-
-    /* Panel kiri dan kanan */
-    .panel-left, .panel-right {
-        padding: 15px;
-        width: 100%;
-        overflow-x: hidden;
-    }
-
-    /* Canvas - pastikan tidak melebihi lebar layar */
-    .canvas-container {
-        padding: 5px;
-        overflow-x: auto;
-    }
-    #lahanCanvas {
-        width: 100%;
-        height: auto;
         max-width: 100%;
     }
 
-    /* Tabel hasil - scroll horizontal jika perlu */
+    /* Main content jadi 1 kolom */
+    .main-content {
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+        padding: 10px;
+    }
+
+    /* Panel dalam bisa scroll jika perlu */
+    .panel-left, .panel-right {
+        padding: 12px;
+        overflow-x: auto;
+    }
+
+    /* Canvas - bisa di-scroll horizontal */
+    .canvas-container {
+        overflow-x: auto;
+        text-align: center;
+    }
+    #lahanCanvas {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Tabel hasil - scroll horizontal */
     .table-container {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
     table {
-        min-width: 500px; /* biar bisa di-scroll, tidak mengecil terlalu kecil */
+        min-width: 500px; /* biar bisa digeser */
         font-size: 12px;
     }
     th, td {
         padding: 6px 4px;
-        white-space: nowrap;
     }
 
     /* Peta interaktif */
@@ -2196,25 +2196,25 @@ body.dark-mode .estimasi-bibit small {
         height: 250px !important;
     }
     .map-header {
-        flex-wrap: wrap;
+        flex-direction: column;
         gap: 8px;
-        justify-content: center !important;
+        text-align: center;
     }
     .map-header button {
         font-size: 10px;
         padding: 4px 8px;
     }
 
-    /* Preset buttons - wrap dengan rapi */
+    /* Preset tombol - wrap rapi */
     .preset-buttons {
         justify-content: center;
     }
     .preset-btn {
         font-size: 10px;
-        padding: 6px 10px;
+        padding: 5px 8px;
     }
 
-    /* Fitur grid - 1 kolom di HP */
+    /* Fitur grid jadi 1 kolom */
     .feature-grid {
         grid-template-columns: 1fr !important;
         gap: 10px;
@@ -2227,28 +2227,24 @@ body.dark-mode .estimasi-bibit small {
         word-break: break-word;
     }
 
-    /* Konversi satuan, estimasi pagar, bibit */
+    /* Konversi satuan & estimasi - susun vertikal */
     .konversi-satuan > div,
     .estimasi-pagar > div,
     .estimasi-bibit > div {
         flex-direction: column;
-        align-items: stretch;
+        gap: 8px;
     }
     .konversi-satuan input,
     .konversi-satuan select,
     .estimasi-pagar input,
     .estimasi-bibit input {
         width: 100% !important;
-        margin-bottom: 8px;
     }
 
     /* Detail perhitungan */
     .perhitungan-body {
         font-size: 11px;
         padding: 10px;
-    }
-    .perhitungan-step {
-        padding-left: 8px;
     }
     .formula {
         font-size: 10px;
@@ -2257,21 +2253,21 @@ body.dark-mode .estimasi-bibit small {
         word-break: break-all;
     }
 
-    /* Integral section */
+    /* Integral & metode section */
     .integral-section, .metode-section {
-        margin: 0 15px 15px 15px !important;
+        margin: 0 10px 15px 10px !important;
     }
     .integral-header h3, .roll-header span {
         font-size: 13px;
     }
 
-    /* Footer grid jadi 1 kolom */
+    /* Footer */
     .footer-grid {
         grid-template-columns: 1fr !important;
-        gap: 10px;
+        gap: 12px;
     }
 
-    /* Tombol bantuan lebih kecil di HP */
+    /* Tombol bantuan lebih kecil */
     .bantuan-btn {
         width: 45px;
         height: 45px;
@@ -2279,10 +2275,4 @@ body.dark-mode .estimasi-bibit small {
         bottom: 15px;
         right: 15px;
     }
-}
-
-/* Tambahan untuk memastikan tidak ada overflow horizontal */
-body, .container, .main-content, .panel-left, .panel-right {
-    overflow-x: hidden;
-    max-width: 100%;
 }
