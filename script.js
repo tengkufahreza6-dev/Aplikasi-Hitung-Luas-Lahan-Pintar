@@ -1248,7 +1248,8 @@ if (totalBiayaElem) totalBiayaElem.textContent = 'Rp 0';
     if (kesimpulanDetailElem) kesimpulanDetailElem.innerHTML = '';
     if (infoInterpolasiElem) infoInterpolasiElem.innerHTML = '<strong>💡 STATUS:</strong> Siap menghitung. Partisi: 200';
     if (perhitunganContainer) perhitunganContainer.innerHTML = ''; // TAMBAHKAN INI
-    
+    // Hapus active class dari semua preset
+document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
     currentPoints = [];
     showToast('Semua direset', 'info');
 }
@@ -1529,11 +1530,16 @@ if (btnReset) btnReset.addEventListener('click', debounce(resetAll, 300));
     if (btnResetView) btnResetView.addEventListener('click', resetView);
     
     document.querySelectorAll('.preset-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const preset = this.dataset.preset;
-            loadPreset(preset);
-        });
+    btn.addEventListener('click', function() {
+        // Hapus active dari semua preset
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        // Tandai yang diklik sebagai active
+        this.classList.add('active');
+        
+        const preset = this.dataset.preset;
+        loadPreset(preset);
     });
+});
     
     canvas.addEventListener('mousedown', startDrag);
     canvas.addEventListener('mousemove', drag);
