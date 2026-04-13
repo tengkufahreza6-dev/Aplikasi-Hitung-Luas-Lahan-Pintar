@@ -1164,7 +1164,7 @@ if (kelilingElem) {
         const konversiInput = document.getElementById('konversiInput');
         if (konversiInput) {
             konversiInput.value = hasil.poligon.toFixed(presisi);
-            updateKonversi();  // memicu perhitungan ulang konversi
+            if (typeof updateKonversi === 'function') updateKonversi();
         }
 // Fungsi untuk update biaya berdasarkan harga pagar
 const hargaInput = document.getElementById('hargaPagar');
